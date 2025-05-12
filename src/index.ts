@@ -24,6 +24,22 @@ export default {
     try {
       try {
         const projectId = env.FIREBASE_PROJECT_ID;
+        if (!projectId) {
+          return new Response(
+            "Configuration error: Firebase Project ID not set",
+            { status: 500 }
+          );
+        }
+
+        const jwksResponse = await fetch(
+          "https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com"
+        );
+        if (!jwksResponse.ok) {
+          return new Response(`JWKS fetch failed: ${jwksResponse.status}`, {
+            status: 500,
+          });
+        }
+
         const JWKS = createRemoteJWKSet(
           new URL(
             "https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com"
@@ -64,7 +80,7 @@ export default {
           headers: {
             "Content-Type": "text/event-stream",
             "Cache-Control": "no-cache",
-            Connection: "keep-alive",
+            "Connection": "keep-alive",
           },
         });
       } else {
