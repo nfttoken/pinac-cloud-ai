@@ -57,25 +57,25 @@ export default {
       };
       const stream = await env.AI.run("@cf/google/gemma-3-12b-it", {
         messages,
-        stream: messages.stream,
+        // stream: false,
         max_tokens: 1096,
       });
-      if (messages.stream) {
-        return new Response(stream, {
-          headers: {
-            "Content-Type": "text/event-stream",
-            "Cache-Control": "no-cache",
-            Connection: "keep-alive",
-          },
-        });
-      } else {
-        const result = await stream;
-        return new Response(JSON.stringify(result), {
+      // if (messages.stream) {
+      //   return new Response(stream, {
+      //     headers: {
+      //       "Content-Type": "text/event-stream",
+      //       "Cache-Control": "no-cache",
+      //       Connection: "keep-alive",
+      //     },
+      //   });
+      // } else {
+      //   const result = await stream;
+        return new Response(JSON.stringify(stream), {
           headers: {
             "Content-Type": "application/json",
           },
         });
-      }
+      // }
     } catch (error) {
       const errorMessage =
         error && typeof error === "object" && "message" in error
