@@ -1,5 +1,4 @@
-import { initializeApp } from "firebase/app";
-import { getAuth, signInWithCustomToken } from "firebase/auth";
+import { createRemoteJWKSet, jwtVerify } from "jose";
 
 export default {
   async fetch(request, env) {
@@ -23,15 +22,24 @@ export default {
     const token = authHeader.split("Bearer ")[1];
 
     try {
-      const firebaseConfig = {
-        apiKey: env.FIREBASE_API_KEY,
-        authDomain: env.FIREBASE_AUTH_DOMAIN,
-        projectId: env.FIREBASE_PROJECT_ID,
-      };
-
-      const app = initializeApp(firebaseConfig);
-      const auth = getAuth(app);
-      await signInWithCustomToken(auth, token);
+      try {
+        const projectId = env.FIREBASE_PROJECT_ID;
+        const JWKS = createRemoteJWKSet(
+          new URL(
+            "https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com"
+          )
+        );
+        await jwtVerify(token, JWKS, {
+          issuer: `https://securetoken.google.com/${projectId}`,
+          audience: projectId,
+        });
+      } catch (jwtError) {
+        let message = "Invalid ID token.";
+        if (jwtError instanceof Error) {
+          message = jwtError.message;
+        }
+        return new Response("Unauthorized: " + message, { status: 403 });
+      }
 
       // If authentication successful, proceed
       const contentType = request.headers.get("content-type");
@@ -43,7 +51,7 @@ export default {
       }
 
       const messages = (await request.json()) as {
-        messages?: any[];
+        messages: any[];
         stream: boolean;
       };
       const stream = await env.AI.run("@cf/google/gemma-3-12b-it", {

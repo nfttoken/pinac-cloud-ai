@@ -27,6 +27,6 @@
     "dev": "wrangler dev"
   },
   "dependencies": {
-    "firebase": "^11.7.1"
+    "jose": "^6.0.11"
   }
 }
