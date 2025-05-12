@@ -51,10 +51,7 @@ export default {
         });
       }
 
-      const messages = (await request.json()) as {
-        messages: any[];
-        stream: boolean;
-      };
+      const messages = await request.json();
       const stream = await env.AI.run("@cf/google/gemma-3-12b-it", {
         messages,
         // stream: false,
