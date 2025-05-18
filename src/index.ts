@@ -81,16 +81,9 @@ export default {
         error && typeof error === "object" && "message" in error
           ? (error as { message: string }).message
           : String(error);
-
-      if (errorMessage.includes("auth") || errorMessage.includes("token")) {
-        return new Response("Authentication failed: " + errorMessage, {
-          status: 403,
-        });
-      } else {
-        return new Response("Error processing request: " + errorMessage, {
-          status: 500,
-        });
-      }
+      return new Response("Error processing request: " + errorMessage, {
+        status: 500,
+      });
     }
   },
 } satisfies ExportedHandler<Env>;
