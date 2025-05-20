@@ -58,7 +58,7 @@ export default {
       const stream = await env.AI.run("@cf/google/gemma-3-12b-it", {
         messages: requestData.messages,
         stream: requestData.stream,
-        max_tokens: 800,
+        max_tokens: 2096,
       });
       if (requestData.stream) {
         return new Response(stream, {
