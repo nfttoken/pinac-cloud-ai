@@ -1,10 +1,10 @@
-// import { createRemoteJWKSet, jwtVerify } from "jose";
+import { createRemoteJWKSet, jwtVerify } from "jose";
 
-// const JWKS = createRemoteJWKSet(
-//   new URL(
-//     "https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com"
-//   )
-// );
+const JWKS = createRemoteJWKSet(
+  new URL(
+    "https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com"
+  )
+);
 
 export default {
   async fetch(request, env) {
@@ -18,29 +18,29 @@ export default {
       });
     }
 
-    // const authHeader = request.headers.get("Authorization");
-    // if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    //   return new Response("Unauthorized: No valid token provided", {
-    //     status: 401,
-    //   });
-    // }
+    const authHeader = request.headers.get("Authorization");
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return new Response("Unauthorized: No valid token provided", {
+        status: 401,
+      });
+    }
 
-    // const token = authHeader.split("Bearer ")[1];
+    const token = authHeader.split("Bearer ")[1];
 
     try {
-      // try {
-      //   const projectId = env.FIREBASE_PROJECT_ID;
-      //   await jwtVerify(token, JWKS, {
-      //     issuer: `https://securetoken.google.com/${projectId}`,
-      //     audience: projectId,
-      //   });
-      // } catch (jwtError) {
-      //   let message = "Invalid ID token.";
-      //   if (jwtError instanceof Error) {
-      //     message = jwtError.message;
-      //   }
-      //   return new Response("Unauthorized: " + message, { status: 403 });
-      // }
+      try {
+        const projectId = env.FIREBASE_PROJECT_ID;
+        await jwtVerify(token, JWKS, {
+          issuer: `https://securetoken.google.com/${projectId}`,
+          audience: projectId,
+        });
+      } catch (jwtError) {
+        let message = "Invalid ID token.";
+        if (jwtError instanceof Error) {
+          message = jwtError.message;
+        }
+        return new Response("Unauthorized: " + message, { status: 403 });
+      }
 
       // If authentication successful, proceed
       const contentType = request.headers.get("content-type");
