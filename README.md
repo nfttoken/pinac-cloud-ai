@@ -104,6 +104,7 @@ The server uses the following AI model configuration:
 
 | Error Code              | Description                                | Status Code |
 | ----------------------- | ------------------------------------------ | ----------- |
+| `METHOD_NOT_ALLOWED`    | Only POST requests are allowed             | 405         |
 | `INVALID_CONTENT_TYPE`  | Request missing required JSON content-type | 415         |
 | `BAD_REQUEST`           | Messages field missing or invalid          | 400         |
 | `AI_SERVER_ERROR`       | Server processing error                    | 500         |

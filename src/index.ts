@@ -18,6 +18,13 @@ function createErrorResponse(
 
 export default {
   async fetch(request, env) {
+    if (request.method !== "POST") {
+      return createErrorResponse(
+        "METHOD_NOT_ALLOWED",
+        "Only POST requests are allowed",
+        405
+      );
+    }
     try {
       const contentType = request.headers.get("content-type");
       if (!contentType?.includes("application/json")) {
