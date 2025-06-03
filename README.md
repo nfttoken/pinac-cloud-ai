@@ -1,106 +1,114 @@
-<div align="center">
-
-<h1 style="border-bottom: none">
-    <b>PINAC Nexus</b>
-</h1>
-
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/cloudflare/templates/tree/main/text-to-image-template)
 
-<br>
+# Pinac Cloud AI Service
 
-</div>
+A Cloudflare Workers-based AI API server that provides streaming chat completions.
 
 ## Features
 
-- **Firebase Authentication**: Only authenticated users with a valid Firebase token can access the API.
-- **Streaming & Non-Streaming**: Supports both streaming and standard JSON responses.
-- **Cloudflare Workers**: Fast, scalable, and serverless deployment.
+- 🤖 AI-powered chat completions
+- 📡 Server-sent events (SSE) streaming responses
+- 🛡️ Robust error handling with structured JSON responses
+- ⚡ Built on Cloudflare Workers for global edge deployment
+- 🔒 Input validation and content-type enforcement
 
-## API Usage
+## Setup
 
-### Endpoint
+### Prerequisites
 
+- Node.js 18+
+- Cloudflare account with Workers AI enabled
+- Wrangler CLI
+
+### Installation
+
+1. Clone the repository:
+
+```bash
+git clone <repository-url>
+cd pinac-nexus
 ```
-POST / (Cloudflare Worker endpoint)
+
+2. Install dependencies:
+
+```bash
+npm install
 ```
 
-### Request Headers
+3. Configure Wrangler:
 
-- `Authorization: Bearer <FIREBASE_CUSTOM_TOKEN>`
-- `Content-Type: application/json`
+```bash
+npx wrangler login
+```
 
-### Request Body
+4. Deploy to Cloudflare Workers:
 
-```json
-{
-  "messages": [
-    // Array of message objects for the AI model
-  ],
-  "stream": true // or false
+```bash
+npm run deploy
+```
+
+### Development
+
+Run locally with Wrangler:
+
+```bash
+npm run dev
+```
+
+## Usage Example
+
+> [!NOTE]
+> It will be accessed through API-Getway and need user ID-Token for authentication
+
+```javascript
+// Using fetch API
+const response = await fetch(
+  "https://api-getway-url/api/ai",
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer YOUR_USER_ID_TOKEN",
+    },
+    body: JSON.stringify({
+      messages: [
+        {
+          role: "user",
+          content: "Write a short poem about coding",
+        },
+      ],
+    }),
+  }
+);
+
+// Handle streaming response
+const reader = response.body.getReader();
+while (true) {
+  const { done, value } = await reader.read();
+  if (done) break;
+
+  const chunk = new TextDecoder().decode(value);
+  console.log(chunk);
 }
 ```
 
-### Responses
+## Configuration
 
-- **200 OK**: Returns AI model response (streaming or JSON).
-- **401 Unauthorized**: Missing or invalid Firebase token.
-- **403 Forbidden**: Authentication failed.
-- **415 Unsupported Media Type**: Content-Type is not `application/json`.
-- **405 Method Not Allowed**: Only POST requests are accepted.
-- **500 Internal Server Error**: Other errors.
+The server uses the following AI model configuration:
 
-## Example cURL Request
+- Model: `@cf/google/gemma-3-12b-it`
+- Max tokens: 2096
+- Streaming: Always enabled
 
-```bash
-curl -X POST https://<your-worker-endpoint> \
-  -H "Authorization: Bearer <FIREBASE_CUSTOM_TOKEN>" \
-  -H "Content-Type: application/json" \
-  -d '{"messages":[{"role":"user","content":"Hello!"}],"stream":false}'
-```
+## Error Codes
 
-## Setup & Deployment
+| Error Code              | Description                                | Status Code |
+| ----------------------- | ------------------------------------------ | ----------- |
+| `METHOD_NOT_ALLOWED`    | Only POST requests are allowed             | 405         |
+| `INVALID_CONTENT_TYPE`  | Request missing required JSON content-type | 415         |
+| `BAD_REQUEST`           | Messages field missing or invalid          | 400         |
+| `AI_SERVER_ERROR`       | Server processing error                    | 500         |
 
-1. **Clone the repository:**
+## Author
 
-   ```bash
-   git clone https://github.com/your-username/pinac-nexus.git
-   cd pinac-nexus
-   ```
-
-2. **Install dependencies:**
-
-   ```bash
-   npm install
-   ```
-
-3. **Configure environment variables:**
-
-   Add your Firebase credentials to your `wrangler.toml` or Cloudflare dashboard:
-
-   ```toml
-   [vars]
-   FIREBASE_API_KEY = "your-firebase-api-key"
-   FIREBASE_AUTH_DOMAIN = "your-firebase-auth-domain"
-   FIREBASE_PROJECT_ID = "your-firebase-project-id"
-   ```
-
-4. **Deploy to Cloudflare Workers:**
-   ```bash
-   npx wrangler deploy
-   ```
-
-## Environment Variables
-
-- `FIREBASE_API_KEY`
-- `FIREBASE_AUTH_DOMAIN`
-- `FIREBASE_PROJECT_ID`
-
-## Notes
-
-- You must provide a valid Firebase custom token in the `Authorization` header for every request.
-- The API is designed for secure, authenticated access to AI-powered endpoints.
-
----
-
-**License:** MIT  
-**Author:** [Your Name or Organization]
+@RajeshTechForge

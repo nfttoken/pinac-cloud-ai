@@ -1,89 +1,76 @@
-import { createRemoteJWKSet, jwtVerify } from "jose";
-
-const JWKS = createRemoteJWKSet(
-  new URL(
-    "https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com"
-  )
-);
+function createErrorResponse(
+  errorCode: string,
+  message: string,
+  status: number
+) {
+  return new Response(
+    JSON.stringify({
+      error: errorCode,
+      message: message,
+      timestamp: new Date().toISOString(),
+    }),
+    {
+      status: status,
+      headers: { "Content-Type": "application/json" },
+    }
+  );
+}
 
 export default {
   async fetch(request, env) {
     if (request.method !== "POST") {
-      return new Response("Method not allowed", {
-        status: 405,
-        headers: {
-          Allow: "POST",
-          "Content-Type": "application/json",
-        },
-      });
+      return createErrorResponse(
+        "METHOD_NOT_ALLOWED",
+        "Only POST requests are allowed",
+        405
+      );
     }
-
-    const authHeader = request.headers.get("Authorization");
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return new Response("Unauthorized: No valid token provided", {
-        status: 401,
-      });
-    }
-
-    const token = authHeader.split("Bearer ")[1];
-
     try {
-      try {
-        const projectId = env.FIREBASE_PROJECT_ID;
-        await jwtVerify(token, JWKS, {
-          issuer: `https://securetoken.google.com/${projectId}`,
-          audience: projectId,
-        });
-      } catch (jwtError) {
-        let message = "Invalid ID token.";
-        if (jwtError instanceof Error) {
-          message = jwtError.message;
-        }
-        return new Response("Unauthorized: " + message, { status: 403 });
-      }
-
-      // If authentication successful, proceed
       const contentType = request.headers.get("content-type");
       if (!contentType?.includes("application/json")) {
-        return new Response("Content-Type must be application/json", {
-          status: 415,
-          headers: { "Content-Type": "application/json" },
-        });
+        return createErrorResponse(
+          "INVALID_CONTENT_TYPE",
+          "Content-Type must be application/json",
+          415
+        );
       }
 
       const requestData = (await request.json()) as {
         messages: any[];
-        stream: boolean;
       };
+
+      if (!requestData.messages || !Array.isArray(requestData.messages)) {
+        return createErrorResponse(
+          "BAD_REQUEST",
+          "Messages field is required and must be an array",
+          400
+        );
+      }
+
       const stream = await env.AI.run("@cf/google/gemma-3-12b-it", {
         messages: requestData.messages,
-        stream: requestData.stream,
+        stream: true,
         max_tokens: 2096,
       });
-      if (requestData.stream) {
-        return new Response(stream, {
-          headers: {
-            "Content-Type": "text/event-stream",
-            "Cache-Control": "no-cache",
-            Connection: "keep-alive",
-          },
-        });
-      } else {
-        const result = await stream;
-        return new Response(JSON.stringify(result), {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-      }
+
+      return new Response(stream, {
+        headers: {
+          "Content-Type": "text/event-stream",
+          "Cache-Control": "no-cache",
+          Connection: "keep-alive",
+        },
+      });
     } catch (error) {
       const errorMessage =
         error && typeof error === "object" && "message" in error
           ? (error as { message: string }).message
           : String(error);
-      return new Response("Error processing request: " + errorMessage, {
-        status: 500,
-      });
+
+      return createErrorResponse(
+        "AI_SERVER_ERROR",
+        "Error processing request: " + errorMessage,
+        500
+      );
     }
   },
 } satisfies ExportedHandler<Env>;
