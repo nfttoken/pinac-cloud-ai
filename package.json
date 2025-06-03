@@ -1,5 +1,5 @@
 {
-  "name": "pinac-nexus",
+  "name": "pinac-cloud-ai",
   "version": "1.0.0",
   "description": "API server that provides streaming chat completions using Workers AI models.",
   "devDependencies": {

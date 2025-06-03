@@ -2,7 +2,7 @@
 
 # Pinac Cloud AI Service
 
-A Cloudflare Workers-based AI API server that provides streaming chat completions using Google's Gemma model.
+A Cloudflare Workers-based AI API server that provides streaming chat completions.
 
 ## Features
 
