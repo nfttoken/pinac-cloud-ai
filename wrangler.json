@@ -1,7 +1,7 @@
 {
   "compatibility_date": "2025-04-01",
   "main": "src/index.ts",
-  "name": "pinac-cloud-ai",
+  "name": "pinan-cloud-ai-api",
   "upload_source_maps": true,
   "ai": {
     "binding": "AI"
