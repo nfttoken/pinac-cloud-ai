@@ -1,5 +1,3 @@
-[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/cloudflare/templates/tree/main/text-to-image-template)
-
 # Pinac Cloud AI Service
 
 A Cloudflare Workers-based AI API server that provides streaming chat completions.
